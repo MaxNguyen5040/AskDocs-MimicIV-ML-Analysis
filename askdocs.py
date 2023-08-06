@@ -11,14 +11,14 @@ import os
 start_time = time.time()
 
 # ________Code to convert Gzip files into json_______
-# for subdir, dirs, files in os.walk("askdocs_input"):
-#     for file in files:
-#         print(file)
+for subdir, dirs, files in os.walk("askdocs_input"):
+    for file in files:
+        print(file)
 
-#         with gzip.open("askdocs_input/"+file, 'rb') as file_in:
-#             with open("askdocs_output/"+file, 'wb') as file_out:
-#                 shutil.copyfileobj(file_in, file_out)
-#                 print('example.json file created')
+        with gzip.open("askdocs_input/"+file, 'rb') as file_in:
+            with open("askdocs_output/"+file, 'wb') as file_out:
+                shutil.copyfileobj(file_in, file_out)
+                print('example.json file created')
 
 def process_data(input_file):
     with open("askdocs_output/"+ input_file) as f:
@@ -91,27 +91,27 @@ def process_data(input_file):
 
 
 
-for subdir, dirs, files in os.walk("askdocs_output"):
-    num_comments = 0
-    num_posts = 0
-    num_pairs = 0
-    keyword = 0
+# for subdir, dirs, files in os.walk("askdocs_output"):
+#     num_comments = 0
+#     num_posts = 0
+#     num_pairs = 0
+#     keyword = 0
 
-    for file in files:
-        if file[0:2] == "RS":
-            print(file)
-            a,b,c,d = process_data(file)
-            num_comments += b
-            num_posts += c
-            num_pairs += a
-            keyword += d
-    print(num_comments)
-    print(num_posts)
-    print(num_pairs)
-    print(keyword)
-    #695218
-    #278381
-    #53932
-    #3412
+#     for file in files:
+#         if file[0:2] == "RS":
+#             print(file)
+#             a,b,c,d = process_data(file)
+#             num_comments += b
+#             num_posts += c
+#             num_pairs += a
+#             keyword += d
+#     print(num_comments)
+#     print(num_posts)
+#     print(num_pairs)
+#     print(keyword)
+#     #695218
+#     #278381
+#     #53932
+#     #3412
 
 print("--- %s seconds ---" % (time.time() - start_time))
