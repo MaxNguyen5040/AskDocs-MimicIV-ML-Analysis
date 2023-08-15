@@ -1,0 +1,5 @@
+askdocs_input/
+*.gz
+*.jsonl
+*.json
+*.csv
