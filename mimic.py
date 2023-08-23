@@ -144,8 +144,4 @@ def main():
     print("--- %s seconds ---" % (time.time() - start_time))
 
 
-
-
-
-
 main()

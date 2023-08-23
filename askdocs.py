@@ -23,8 +23,6 @@ from transformers import AutoTokenizer, RobertaModel
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-headers = {"Authorization": f"Bearer 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"}
-
 def download_punkt():
     import nltk
     import ssl
