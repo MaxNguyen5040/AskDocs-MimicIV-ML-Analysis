@@ -10,7 +10,20 @@ import nltk
 from nltk.tokenize import sent_tokenize
 from sentimentr.sentimentr import Sentiment
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-#test
+import requests
+import numpy as np
+
+
+# from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+# tokenizer = AutoTokenizer.from_pretrained("cardiffnlp/twitter-roberta-base-sentiment-latest")
+# model = AutoModelForSequenceClassification.from_pretrained("cardiffnlp/twitter-roberta-base-sentiment-latest")
+
+from transformers import AutoTokenizer, RobertaModel
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+headers = {"Authorization": f"Bearer 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"}
 
 def download_punkt():
     import nltk
@@ -136,8 +149,10 @@ def lookup(post_comment_pairs, phrase):
 def sentiment_analysis(keyword_search_folder, sentiment_model):
     global total_pairs
     total_pairs = 0
+    global tokenizer
+    global model
 
-    models = {"Stanza": stanza_sentiment, "Sentimentr": sentimentr_sentiment, "Vader": vader_sentiment}
+    models = {"Stanza": stanza_sentiment, "Sentimentr": sentimentr_sentiment, "Vader": vader_sentiment, "Roberta": roberta_sentiment, "DistilRoberta": roberta_sentiment, "Generic": roberta_sentiment}
     sentiment_function = models.get(sentiment_model)
 
     if sentiment_model == "Stanza":
@@ -151,6 +166,19 @@ def sentiment_analysis(keyword_search_folder, sentiment_model):
     if sentiment_model == "Vader":
         global analyzer
         analyzer = SentimentIntensityAnalyzer()
+
+    if sentiment_model == "Roberta":
+        tokenizer = AutoTokenizer.from_pretrained("cardiffnlp/twitter-roberta-base-sentiment-latest")
+        model = AutoModelForSequenceClassification.from_pretrained("cardiffnlp/twitter-roberta-base-sentiment-latest")
+
+    if sentiment_model == "DistilRoberta":
+        tokenizer = AutoTokenizer.from_pretrained("mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis")
+        model = AutoModelForSequenceClassification.from_pretrained("mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis")
+
+    if sentiment_model == "Generic":
+        tokenizer = AutoTokenizer.from_pretrained("Seethal/sentiment_analysis_generic_dataset")
+        model = AutoModelForSequenceClassification.from_pretrained("Seethal/sentiment_analysis_generic_dataset")
+
 
     count = 0
     for subdir, dirs, files in os.walk(keyword_search_folder):
@@ -195,7 +223,6 @@ def sentiment_analysis(keyword_search_folder, sentiment_model):
                     print(f"count: {total_pairs + count} of 53932")
                 total_pairs += count
 
-
 #Running sentiment analysis using Stanford CoreNLP Python port Stanza
 def stanza_sentiment(input_sentence):
     sentiment_dict = {0:"Negative", 1: "Neutral", 2: "Positive"}
@@ -215,6 +242,17 @@ def sentimentr_sentiment(input_sentence):
     # print(score)
     return score
 
+def roberta_sentiment(input_sentence):
+    LABELS = {0: 'negative', 1: 'neutral', 2: 'positive'}
+
+    inputs = tokenizer(input_sentence, return_tensors="pt")
+    outputs = model(**inputs)["logits"][0].detach().tolist() #list of logits [.3,.5,.-9]
+
+    softmax_values = np.exp(outputs) / np.sum(np.exp(outputs))
+    label = LABELS[softmax_values.argmax()]
+    print(label)
+    return outputs,softmax_values,label
+
 def main():
     global start_time
     start_time = time.time()
@@ -228,7 +266,7 @@ def main():
     # lookup_iterator("askdocs_pairs", "pain")
 
     #Still need an output way to store sentiment data.
-    sentiment_analysis("askdocs_keyword_output", "Sentimentr")
+    sentiment_analysis("askdocs_keyword_output", "Generic")
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
